@@ -1,0 +1,22 @@
+ul[id^="room-list-"] {
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+  }
+  
+  ul[id^="room-list-"] li {
+    padding: 5px 0;
+  }
+  
+  ul[id^="room-list-"] li a {
+    color: #333;
+    text-decoration: none;
+    display: block;
+  }
+  
+  ul[id^="room-list-"] li a:hover {
+    background-color: #eee;
+  }
+  

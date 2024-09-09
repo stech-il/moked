@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ניהול חדשות</title>
+</head>
+<body>
+  <h1>ניהול חדשות</h1>
+  <ul>
+    <% news.forEach(item => { %>
+      <li>
+        <h2><%= item.title %></h2>
+        <p><%= item.content %></p>
+        <form action="/admin/deleteNews/<%= item._id %>" method="POST">
+          <button type="submit">מחק</button>
+        </form>
+        <a href="/admin/editNews/<%= item._id %>">ערוך</a>
+      </li>
+    <% }) %>
+  </ul>
+  <a href="/admin">חזור לפאנל ניהול</a>
+</body>
+</html>

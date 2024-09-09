@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>צ'ק-אין</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    /* הוספה לסגנונות הקיימים */
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f7f7f7;
+      margin: 0;
+    }
+
+    .logo {
+      margin-bottom: 20px;
+    }
+
+    .logo img {
+      max-width: 150px; /* גודל דינמי מותאם לפרופורציות הדף */
+      height: auto;
+    }
+
+    .container {
+      text-align: center;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .phone-input {
+      text-align: center;
+      font-size: 24px;
+      width: 80%;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+
+    .number-pad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      max-width: 240px;
+      margin: 0 auto;
+    }
+
+    .number-pad button {
+      font-size: 24px;
+      padding: 15px;
+      border: none;
+      border-radius: 50%;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .number-pad button:hover {
+      background-color: #0056b3;
+    }
+
+    .number-pad button[type="submit"] {
+      background-color: #28a745;
+      grid-column: span 3;
+      border-radius: 5px;
+    }
+
+    .number-pad button:focus {
+      outline: none;
+    }
+
+    .thank-you-message {
+      font-size: 24px;
+      color: green;
+      display: none;
+    }
+
+    .error-message {
+      font-size: 20px;
+      color: red;
+      margin-top: 10px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <img src="/public/logo.png" alt="Logo">
+  </div>
+  <div class="error-message" id="errorMessage">מספר טלפון לא תקין, אנא נסה שוב.</div>
+
+  <div class="container">
+    <form id="checkinForm" action="/checkin" method="POST">
+      <input type="text" id="phoneNumber" name="phoneNumber" class="phone-input" placeholder="הכנס מספר טלפון" readonly required>
+      <div class="number-pad">
+        <% for(let i = 1; i <= 9; i++) { %>
+          <button type="button" onclick="addNumber('<%= i %>')"><%= i %></button>
+        <% } %>
+        <button type="button" onclick="deleteLastNumber()">מחק</button>
+        <button type="button" onclick="addNumber('0')">0</button>
+        <button type="submit">שלח</button>
+      </div>
+    </form>
+    
+    <div class="thank-you-message" id="thankYouMessage">
+      מספר תור: <span id="queueNumber"></span>
+    </div>
+  </div>
+
+  <script>
+    let queueNumber = ''; // משתנה גלובלי לאחסון מספר התור
+
+    function addNumber(num) {
+      const phoneNumber = document.getElementById('phoneNumber');
+      phoneNumber.value += num;
+    }
+
+    function deleteLastNumber() {
+      const phoneNumber = document.getElementById('phoneNumber');
+      phoneNumber.value = phoneNumber.value.slice(0, -1); // מחיקת הספרה האחרונה
+    }
+
+    function clearNumber() {
+      const phoneNumber = document.getElementById('phoneNumber');
+      phoneNumber.value = '';
+      document.getElementById('errorMessage').style.display = 'none'; // הסתרת הודעת השגיאה
+    }
+
+    function validatePhoneNumber(phoneNumber) {
+      const phoneRegex = /^0\d{9}$/; // מתאר מספר טלפון ישראלי תקין
+      return phoneRegex.test(phoneNumber);
+    }
+
+    function hideErrorMessageAfterDelay() {
+      setTimeout(function() {
+        document.getElementById('errorMessage').style.display = 'none';
+      }, 4000);
+    }
+
+    document.getElementById('checkinForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      
+      const phoneNumber = document.getElementById('phoneNumber').value;
+
+      if (!validatePhoneNumber(phoneNumber)) {
+        document.getElementById('errorMessage').style.display = 'block';
+        hideErrorMessageAfterDelay(); // קריאה לפונקציה להסתיר את הודעת השגיאה
+        return; // עצור את השליחה אם המספר לא תקין
+      }
+
+      // שליחה של הנתונים לשרת אם המספר תקין
+      const form = this;
+
+      fetch('/checkin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({ phoneNumber: phoneNumber })
+      })
+      .then(response => response.json())
+      .then(data => {
+        queueNumber = data.queueNumber; // שמירה של מספר התור למשתנה גלובלי
+        document.getElementById('queueNumber').innerText = queueNumber;
+        document.getElementById('thankYouMessage').style.display = 'block';
+        form.style.display = 'none';
+
+        // חזרה לטופס לאחר 4 שניות
+        setTimeout(function() {
+          document.getElementById('thankYouMessage').style.display = 'none';
+          form.style.display = 'block';
+          clearNumber();
+        }, 4000);
+      })
+      .catch(error => console.error('Error:', error));
+    });
+  </script>
+</body>
+</html>

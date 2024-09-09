@@ -1,0 +1,13 @@
+{
+    "current_patient": "מטופל נוכחי:",
+    "no_patient": "אין מטופל כעת",
+    "waiting_list": "רשימת המתנה:",
+    "promote": "העלה",
+    "delete": "מחק",
+    "move": "העבר",
+    "prioritize": "תעדף",
+    "unprioritize": "בטל תיעדוף",
+    "complete_treatment": "סיים טיפול נוכחי",
+    "room": "חדר"
+  }
+  

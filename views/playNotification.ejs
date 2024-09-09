@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ניגון הודעה קולית</title>
+</head>
+<body>
+  <script>
+    // נגן אודיו קצר מאוד כדי לעקוף את מגבלות האוטומציה של הדפדפן
+    document.addEventListener('DOMContentLoaded', function () {
+      const silentAudio = new Audio('/audio/silent.mp3'); // כאן שם הקובץ הקצר מאוד
+      silentAudio.play().then(() => {
+        console.log("Silent audio played to bypass autoplay restrictions.");
+        playNotification('<%= patientNumber %>', '<%= roomName %>');
+      }).catch(error => {
+        console.error("Failed to play silent audio:", error);
+        playNotification('<%= patientNumber %>', '<%= roomName %>'); // במקרה של כשל, נגן את ההודעה בכל מקרה
+      });
+    });
+
+    function playNotification(patientNumber, roomName) {
+      const baseUrl = '/audio/'; 
+      const audioFiles = [];
+
+      audioFiles.push(new Audio(`${baseUrl}patient-number.mp3`)); 
+      
+      if (patientNumber >= 100) {
+        const hundreds = Math.floor(patientNumber / 100) * 100;
+        audioFiles.push(new Audio(`${baseUrl}${hundreds}.mp3`));
+      }
+      
+      const tensAndUnits = patientNumber % 100;
+      if (tensAndUnits > 0) {
+        if (tensAndUnits < 10) {
+          audioFiles.push(new Audio(`${baseUrl}${tensAndUnits}.mp3`));
+        } else if (tensAndUnits <= 99) {
+          audioFiles.push(new Audio(`${baseUrl}${tensAndUnits}.mp3`));
+        }
+      }
+
+      audioFiles.push(new Audio(`${baseUrl}room.mp3`)); 
+
+      // הוצאת הספרות ממספר החדר ושימוש בהן בלבד
+      const roomDigits = roomName.replace(/\D/g, ''); // הוצאת כל הספרות בלבד ממספר החדר
+      roomDigits.split('').forEach(digit => {
+        audioFiles.push(new Audio(`${baseUrl}${digit}.mp3`)); // קובץ אודיו עבור כל ספרה
+      });
+
+      playAudioFilesSequentially(audioFiles);
+    }
+
+    function playAudioFilesSequentially(files) {
+      if (files.length === 0) {
+        window.close(); // סגור את החלון בסיום הניגון
+        return;
+      }
+      const file = files.shift();
+      file.play();
+      file.onended = () => playAudioFilesSequentially(files);
+    }
+  </script>
+</body>
+</html>

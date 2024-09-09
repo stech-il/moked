@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>הכרזה</title>
+  <script>
+    // פונקציה לניגון ההכרזה
+    function playNotification(patientNumber, roomName) {
+      const baseUrl = '/audio/'; // נתיב לקבצי האודיו
+      const audioFiles = [];
+
+      audioFiles.push(new Audio(`${baseUrl}patient-number.mp3`)); // קובץ שאומר "מטופל מספר"
+      
+      if (patientNumber >= 100) {
+        const hundreds = Math.floor(patientNumber / 100) * 100;
+        audioFiles.push(new Audio(`${baseUrl}${hundreds}.mp3`));
+      }
+      
+      const tensAndUnits = patientNumber % 100;
+      if (tensAndUnits > 0) {
+        if (tensAndUnits < 10) {
+          audioFiles.push(new Audio(`${baseUrl}${tensAndUnits}.mp3`));
+        } else if (tensAndUnits <= 99) {
+          audioFiles.push(new Audio(`${baseUrl}${tensAndUnits}.mp3`));
+        }
+      }
+
+      audioFiles.push(new Audio(`${baseUrl}room.mp3`)); // קובץ שאומר "לחדר"
+      audioFiles.push(new Audio(`${baseUrl}${roomName}.mp3`)); // מספר החדר
+
+      playAudioFilesSequentially(audioFiles);
+    }
+
+    // פונקציה לניגון הקבצים ברצף
+    function playAudioFilesSequentially(files) {
+      if (files.length === 0) {
+        window.close(); // סגור את החלון בסיום הניגון
+        return;
+      }
+      const file = files.shift();
+      file.play();
+      file.onended = () => playAudioFilesSequentially(files);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const patientNumber = "<%= patientNumber %>";
+      const roomName = "<%= roomName %>";
+      playNotification(patientNumber, roomName);
+    });
+  </script>
+</head>
+<body>
+</body>
+</html>

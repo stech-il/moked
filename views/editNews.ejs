@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>עריכת חדשות</title>
+  <link rel="stylesheet" href="/styles.css"> <!-- קישור לקובץ CSS כללי -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      direction: rtl;
+    }
+
+    .content {
+      background-color: #ffffff;
+      padding: 20px;
+      margin: 0 auto;
+      max-width: 600px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      color: #007bff;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #28a745;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .back-link {
+      display: block;
+      margin-top: 20px;
+      color: #007bff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+ <script src="https://cdn.tiny.cloud/1/nmkt1h9fovsr9g9lzt46vukyrwpyr1k0o8piz8k5x1q39bpu/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+ <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      tinymce.init({
+        selector: '#news-content', // מזהה של טקסט האזור שבו העורך יהיה פעיל
+        menubar: false,
+        toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | outdent indent | link code',
+        plugins: 'link code',
+        height: 300
+      });
+    });
+  </script>
+</head>
+<body>
+
+  <div class="content">
+    <h2>עריכת חדשות</h2>
+  
+    <!-- Form to edit news -->
+    <form action="/admin/editNews/<%= news._id %>" method="POST">
+      <label for="news-title">כותרת:</label>
+      <input type="text" id="news-title" name="title" value="<%= news.title %>" required>
+  
+      <label for="news-content">תוכן:</label>
+      <textarea id="news-content" name="content"><%= news.content %></textarea>
+  
+      <button type="submit">שמור שינויים</button>
+    </form>
+
+    <!-- Link back to the admin panel -->
+    <a href="/admin/news" class="back-link">חזרה לפאנל ניהול</a>
+  </div>
+
+</body>
+</html>

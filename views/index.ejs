@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Queue Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    .room {
+      background-color: #fff;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    h2 {
+      color: #666;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    ul li {
+      padding: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Queue Management System</h1>
+
+  <div class="rooms">
+    <% if (rooms.length > 0) { %>
+      <% rooms.forEach(room => { %>
+        <div class="room">
+          <h2>Room: <%= room.name %></h2>
+          <h3>Current Patient:</h3>
+          <% if (room.currentPatient) { %>
+            <p><strong><%= room.currentPatient.patientName %></strong></p>
+          <% } else { %>
+            <p>No patient is being treated right now</p>
+          <% } %>
+
+          <h3>Waiting List:</h3>
+          <ul>
+            <% room.waitingList.forEach(appointment => { %>
+              <li><%= appointment.patientName %></li>
+            <% }) %>
+          </ul>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <p>No rooms available.</p>
+    <% } %>
+  </div>
+</body>
+</html>

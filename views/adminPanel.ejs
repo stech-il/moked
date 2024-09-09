@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>פאנל ניהול</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      direction: rtl;
+    }
+    .header {
+      background-color: #007bff;
+      color: #ffffff;
+      padding: 15px;
+      text-align: center;
+    }
+    .header p {
+      margin: 5px 0;
+    }
+    .header a {
+      color: #ffffff;
+      text-decoration: none;
+    }
+    .content {
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+      background-color: #ffffff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+    h2 {
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    form {
+      margin-bottom: 30px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+    input[type="text"],
+    input[type="password"],
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #cccccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    input[type="checkbox"] {
+      margin-right: 5px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #ffffff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    ul li {
+      padding: 10px;
+      border-bottom: 1px solid #cccccc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    ul li form {
+      margin: 0;
+    }
+    ul li form button {
+      background-color: #dc3545;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    table th,
+    table td {
+      border: 1px solid #cccccc;
+      padding: 10px;
+      text-align: center;
+    }
+    table th {
+      background-color: #007bff;
+      color: #ffffff;
+    }
+    table a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    table a:hover {
+      text-decoration: underline;
+    }
+    .content h3 {
+      margin-top: 40px;
+    }
+  </style>
+ <script src="https://cdn.tiny.cloud/1/nmkt1h9fovsr9g9lzt46vukyrwpyr1k0o8piz8k5x1q39bpu/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      tinymce.init({
+        selector: '#news-content', // מזהה של טקסט האזור שבו העורך יהיה פעיל
+        menubar: false,
+        toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | outdent indent',
+        plugins: 'link code',
+        height: 300
+      });
+    });
+  </script>
+  
+</head>
+<body>
+  <div class="header">
+    <h1>פאנל ניהול</h1>
+    <p>מחובר כ: <strong><%= user.username %></strong> | <a href="/logout">התנתקות</a></p>
+  </div>
+
+  <div class="content">
+    <h2>ניהול חדרים</h2>
+
+    <!-- Form to add a new room -->
+    <form action="/admin/addRoom" method="POST">
+      <label for="roomName">שם החדר:</label>
+      <input type="text" id="roomName" name="roomName" required>
+      <button type="submit">הוסף חדר</button>
+    </form>
+
+    <!-- List of rooms with delete options -->
+    <h2>חדרים קיימים</h2>
+    <ul>
+      <% rooms.forEach(room => { %>
+        <li>
+          <%= room.name %>
+          <form action="/admin/deleteRoom/<%= room._id %>" method="POST" style="display:inline;">
+            <button type="submit" onclick="return confirm('האם אתה בטוח שברצונך למחוק את החדר הזה?')">מחק</button>
+          </form>
+        </li>
+      <% }) %>
+    </ul>
+
+    <!-- Manage Users Section -->
+    <h2>ניהול משתמשים</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>שם משתמש</th>
+          <th>חדר</th>
+          <th>פעולות</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(user => { %>
+          <tr>
+            <td><%= user.username %></td>
+            <td><%= user.room %></td>
+            <td>
+              <a href="/admin/editUser/<%= user._id %>">ערוך</a>
+              <form action="/admin/deleteUser/<%= user._id %>" method="POST" style="display:inline;">
+                <button type="submit" onclick="return confirm('האם אתה בטוח שברצונך למחוק את המשתמש הזה?')">מחק</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+    <h3>הוספת משתמש חדש</h3>
+    <form action="/admin/addUser" method="POST">
+      <label for="username">שם משתמש:</label>
+      <input type="text" id="username" name="username" required>
+
+      <label for="password">סיסמה:</label>
+      <input type="password" id="password" name="password" required>
+
+      <label for="room">חדר:</label>
+      <select id="room" name="room" required>
+        <% rooms.forEach(room => { %>
+          <option value="<%= room.name %>"><%= room.name %></option>
+        <% }) %>
+      </select>
+
+      <label for="isAdmin">גישה מנהלית:</label>
+      <input type="checkbox" id="isAdmin" name="isAdmin">
+
+      <button type="submit">הוסף משתמש</button>
+    </form>
+  </div>
+  <div class="content">
+    <h2>ניהול חדשות</h2>
+  
+    <!-- Form to add or edit news -->
+    <form action="/admin/addNews" method="POST">
+      <label for="news-title">כותרת:</label>
+      <input type="text" id="news-title" name="title" required>
+  
+      <label for="news-content">תוכן:</label>
+      <textarea id="news-content" name="content"></textarea>
+  
+      <button type="submit">הוסף חדשות</button>
+    </form>
+  
+    <!-- Display list of existing news -->
+    <h2>חדשות קיימות</h2>
+    <ul>
+      <% news.forEach(item => { %>
+        <li>
+          <strong><%= item.title %></strong>
+          <div><%= item.content %></div>
+          <form action="/admin/deleteNews/<%= item._id %>" method="POST" style="display:inline;">
+            <button type="submit" onclick="return confirm('האם אתה בטוח שברצונך למחוק את החדשה הזאת?')">מחק</button>
+          </form>
+          <a href="/admin/editNews/<%= item._id %>">ערוך</a>
+        </li>
+      <% }) %>
+    </ul>
+  </div>
+  
+</body>
+</html>

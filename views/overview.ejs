@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>סקירה כללית של כל החדרים</title>
+  <style>
+    .current-patient {
+  display: inline-flex; /* מציג את התוכן בשורה אחת */
+  align-items: center; /* ממרכז את התוכן אנכית */
+  gap: 10px; /* ריווח בין האלמנטים */
+}
+
+.current-patient h3 {
+  margin: 0; /* מבטל ריווח חיצוני */
+}
+
+.current-patient p {
+  margin: 0; /* מבטל ריווח חיצוני */
+}
+
+    /* עיצוב לכותרת */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background-color: #007bff;
+    }
+
+    .header img {
+      max-height: 80px;
+    }
+
+    /* עיצוב לגוף הדף */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      direction: rtl;
+      text-align: right;
+    }
+
+    /* עיצוב לתוכן המרכזי */
+    .main-content {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+    }
+
+    .content {
+      flex: 2;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .rooms {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+
+    .room {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .room:hover {
+      transform: scale(1.03);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 40px;
+    }
+
+    h2 {
+      color: #007bff;
+      margin-bottom: 10px;
+    }
+
+    h3 {
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    ul li {
+  padding: 10px; /* שמירה על ריווח פנימי */
+  margin: 5px 0; /* שמירה על ריווח בין פריטים */
+  background-color: transparent; /* ללא רקע */
+  border: none; /* ללא מסגרת */
+  box-shadow: none; /* ללא צל */
+  font-size: 22px; /* גודל גופן קלאסי */
+  text-align: right; /* יישור טקסט לשמאל (או ימין עבור RTL) */
+}
+
+
+    .current {
+  color: #e74c3c;
+  font-weight: bold;
+  font-size: 20px; /* גודל גופן 20 פיקסלים */
+  text-align: center; /* ממרכז את הטקסט */
+}
+
+
+    .waiting {
+      color: #3498db;
+   
+    }
+
+    .no-patients {
+      color: #999;
+    }
+
+/* עיצוב התראות */
+.notification {
+  display: none;
+  position: fixed;
+  top: 0; /* שים את ההתראה למעלה */
+  left: 0;
+  width: 100%; /* מלא את כל רוחב המסך */
+  background-color: #007bff; /* צבע רקע אדום בולט */
+  color: white; /* צבע טקסט לבן */
+  padding: 20px; /* ריווח פנימי */
+  font-size: 35px; /* גודל גופן גדול */
+  font-weight: bold; /* טקסט מודגש */
+  text-align: center; /* טקסט ממורכז */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* צללה */
+  z-index: 1000;
+}
+
+
+
+
+    /* עיצוב לווידאו ולחדשות */
+    .video-news-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .youtube-section {
+      width: 100%;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .youtube-section iframe {
+      width: 100%;
+      height: 327px;
+    }
+
+  /* עיצוב למרכיב החדשות הנגללות */
+.news-ticker-container {
+  width: 100%;
+  height: 200px; /* גובה הקונטיינר */
+  overflow: hidden;
+  position: relative;
+  background-color: #fff;
+  border-radius: 10px;
+  border: 2px solid #ccc;
+  margin-top: 20px;
+  box-sizing: border-box;
+}
+
+.news-ticker {
+  display: flex;
+  flex-direction: column;
+  animation: scrollUp 20s linear infinite; /* אנימציה חלקה רציפה */
+}
+
+.news-ticker ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.news-ticker ul li {
+  padding: 10px;
+  font-size: 18px;
+  text-align: center;
+  background-color: transparent;
+  border: none;
+}
+
+@keyframes scrollUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%); /* מעביר את הרשימה חצי מהגובה שלה */
+  }
+}
+
+   
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="/public/logo.png" alt="Logo">
+    <div class="datetime-container">
+      <div class="date" id="current-date"></div>
+      <div class="time" id="current-time"></div>
+    </div>
+  </div>
+  
+  <div class="main-content">
+    <div class="video-news-container">
+      <div class="youtube-section">
+        <iframe src="https://www.youtube.com/embed/_GHi7zyTlpw?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&fs=0&mute=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+
+      <div class="news-ticker-container">
+        <div class="news-ticker">
+          <ul id="news-list">
+            <% news.forEach(item => { %>
+              <li><%- item.content %></li> <!-- שינוי ל-<%- %> להצגת HTML -->
+            <% }) %>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="rooms" id="rooms-container">
+        <!-- כאן תוצג רשימת החדרים -->
+      </div>
+      <button id="enableAudioButton">אפשר ניגון קולי</button>
+    </div>
+  </div>
+
+  <div id="notification" class="notification"></div>
+
+  <!-- חיבור לספריית Socket.IO -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    let audioContextEnabled = false;
+    let startIndex = {}; // ניהול האינדקסים עבור כל חדר
+
+    // פונקציה להפעלת AudioContext פעם אחת
+    function enableAudio() {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      audioContext.resume().then(() => {
+        audioContextEnabled = true;
+        console.log("Audio context enabled");
+        document.getElementById('enableAudioButton').style.display = 'none'; // הסתרת הכפתור
+      }).catch(err => {
+        console.error("Failed to enable audio context:", err);
+      });
+    }
+
+    // פונקציה להצגת הודעה והפעלת אודיו אם האודיו מופעל
+    function showNotification(patientNumber, roomName) {
+      const notification = document.getElementById('notification');
+      notification.textContent = `מטופל מספר ${patientNumber} ל${roomName}`;
+      notification.style.display = 'block';
+
+      if (audioContextEnabled) {
+        playNotification(patientNumber, roomName);
+      } else {
+        console.log("Audio context not enabled. Audio will not play.");
+      }
+
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 10000); // הסתרה לאחר 10 שניות
+    }
+
+    function playNotification(patientNumber, roomName) {
+      const baseUrl = '/audio/';
+      const audioFiles = [];
+
+      // הוספת קובץ "מספר מטופל"
+      audioFiles.push(new Audio(`${baseUrl}patient-number.mp3`)); 
+
+      // טיפול במספרי מאות (100, 200, 300 וכו')
+      if (patientNumber >= 100) {
+        const hundreds = Math.floor(patientNumber / 100) * 100;
+        audioFiles.push(new Audio(`${baseUrl}${hundreds}.mp3`));
+      }
+
+      // טיפול בעשרות ויחידות (מספרים בין 1 ל-99)
+      const tensAndUnits = patientNumber % 100;
+      if (tensAndUnits > 0) {
+        if (tensAndUnits < 10) {
+          audioFiles.push(new Audio(`${baseUrl}${tensAndUnits}.mp3`));
+        } else {
+          audioFiles.push(new Audio(`${baseUrl}${tensAndUnits}.mp3`));
+        }
+      }
+
+      // הוספת קובץ "חדר" (שמות חדרים יכולים להיות בעברית)
+      audioFiles.push(new Audio(`${baseUrl}room.mp3`));
+
+      // הוצאת הספרות ממספר החדר ושימוש בהן בלבד
+      const roomDigits = roomName.replace(/\D/g, ''); // הוצאת כל הספרות בלבד ממספר החדר
+      if (roomDigits) {
+        roomDigits.split('').forEach(digit => {
+          audioFiles.push(new Audio(`${baseUrl}${digit}.mp3`)); // קובץ אודיו עבור כל ספרה
+        });
+      } else {
+        // אם החדר הוא טקסט (עברית לדוגמה), ננגן את הקובץ המתאים
+        audioFiles.push(new Audio(`${baseUrl}${roomName}.mp3`));
+      }
+
+      playAudioFilesSequentially(audioFiles);
+    }
+
+    function playAudioFilesSequentially(files) {
+      if (files.length === 0) return;
+
+      const fileUrl = files.shift().src;
+      const audio = new Audio(fileUrl);
+
+      audio.onended = () => playAudioFilesSequentially(files);
+      audio.onerror = () => {
+        console.error('Error loading or playing audio:', fileUrl);
+        playAudioFilesSequentially(files); // המשך לנגן את הקבצים הנותרים גם אם הייתה שגיאה
+      };
+
+      audio.play();
+    }
+
+    // פונקציה לעדכון חדרים והודעה על מטופלים חדשים
+    function updateRoom(room) {
+      const listElement = document.getElementById(`waiting-list-${room.name}`);
+      const waitingList = room.waitingList;
+
+      if (!startIndex[room.name]) {
+        startIndex[room.name] = 0;
+      }
+
+      listElement.innerHTML = ''; // מנקה את הרשימה הקודמת
+
+      const endIndex = Math.min(startIndex[room.name] + 5, waitingList.length);
+      for (let i = startIndex[room.name]; i < endIndex; i++) {
+        const listItem = document.createElement('li');
+        listItem.className = 'waiting';
+        listItem.textContent = waitingList[i].patientNumber;
+
+        listElement.appendChild(listItem);
+      }
+
+      // עדכון האינדקס לתצוגה הבאה
+      startIndex[room.name] = endIndex < waitingList.length ? endIndex : 0;
+    }
+
+    function fetchRoomData() {
+      fetch('/rooms/data')
+        .then(response => response.json())
+        .then(rooms => {
+          const roomsContainer = document.getElementById('rooms-container');
+          roomsContainer.innerHTML = '';  // נקה את התוכן הקודם
+
+          rooms.forEach(room => {
+            const roomElement = document.createElement('div');
+            roomElement.className = 'room';
+
+            roomElement.innerHTML = `
+              <h2> ${room.name} (ממתינים: ${room.waitingList.length})</h3>
+                <div class="current-patient">
+  <h3>מטופל נוכחי:</h3>
+  ${room.currentPatient ? `<p class="current">${room.currentPatient}</p>` : `<p class="no-patients">אין מטופל בטיפול כרגע</p>`}
+</div>
+              <h3>הבאים בתור</h3>
+              <ul id="waiting-list-${room.name}"></ul>
+            `;
+
+            roomsContainer.appendChild(roomElement);
+
+            // עדכון הרשימה הראשונית עבור החדר
+            updateRoom(room);
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching room data:', error);
+        });
+    }
+
+    function checkForNotifications() {
+      fetch('/room/getNotifications')
+        .then(response => response.json())
+        .then(notifications => {
+          notifications.forEach(notification => {
+            showNotification(notification.patientNumber, notification.roomName);
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching notifications:', error);
+        });
+    }
+
+    // קריאה לפונקציות בעת טעינת הדף
+    fetchRoomData();
+    checkForNotifications();
+
+    // רענון אוטומטי של המידע כל 5 שניות
+    setInterval(() => {
+      fetchRoomData();
+      checkForNotifications();
+    }, 5000);  // כל 5 שניות
+
+    // לחצן להפעלת AudioContext
+    document.getElementById('enableAudioButton').addEventListener('click', enableAudio);
+
+    // התחברות ל-Socket.IO והאזנה לאירוע "callPatient"
+    const socket = io();
+    socket.on('callPatient', (data) => {
+      showNotification(data.patientNumber, data.roomName);
+    });
+
+    // לבדוק עדכונים חדשים כל 5 שניות
+    setInterval(checkForNotifications, 5000);
+    
+
+    // עדכון התאריך והשעה
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // האזנה ללחיצות מקלדת
+      document.addEventListener('keydown', function(event) {
+        if (event.key === '1') { // בדיקה אם לחצו על המקש '1'
+          const audioButton = document.getElementById('enableAudioButton');
+          if (audioButton) {
+            audioButton.click(); // לחץ על הכפתור
+          }
+        }
+      });
+    });
+    function startTicker() {
+  const ticker = document.querySelector('.news-ticker');
+  const list = ticker.querySelector('ul');
+  const itemHeight = list.children[0].offsetHeight; // גובה של כל פריט
+  let offset = 0;
+
+  function animate() {
+    offset += itemHeight;
+    list.style.transition = 'transform 1s ease-in-out';
+    list.style.transform = `translateY(-${offset}px)`;
+
+    setTimeout(() => {
+      if (offset >= list.scrollHeight - ticker.clientHeight) {
+        list.style.transition = 'none';
+        list.style.transform = 'translateY(0)';
+        offset = 0;
+      }
+      animate(); // קריאה חוזרת לפונקציה כדי ליצור את האפקט הרציף
+    }, 3000); // ממתין 3 שניות לפני התזוזה הבאה
+  }
+
+  animate(); // התחלת האנימציה
+}
+
+window.onload = startTicker;
+
+  </script>
+</body>
+</html>

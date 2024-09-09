@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>חדר <%= user.room %></title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+      text-align: right;
+      direction: rtl;
+    }
+    h2, .content p {
+  text-align: center;
+}
+
+.content {
+  direction: rtl;
+  text-align: center;
+  margin: 0 auto;
+  max-width: 800px;
+}
+
+    .header {
+      background-color: #333;
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      margin: 0;
+    }
+
+    .header p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .header a {
+      color: #f44336;
+      text-decoration: none;
+      margin-right: 15px;
+      font-weight: bold;
+    }
+
+    h2 {
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .content {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .content h3 {
+      margin-top: 0;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    ul li {
+      padding: 10px 0;
+      border-bottom: 1px solid #ddd;
+    }
+
+    ul li:last-child {
+      border-bottom: none;
+    }
+
+    button {
+      padding: 10px 15px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    .popup {
+      display: none; 
+      position: fixed; 
+      z-index: 1000; 
+      right: 50%; 
+      top: 50%; 
+      transform: translate(50%, -50%);
+      width: 300px; 
+      padding: 20px; 
+      background-color: white; 
+      border: 1px solid #ccc; 
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+
+    .popup .close-btn {
+      background-color: #f44336;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 5px;
+      float: left;
+    }
+
+    .popup ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .popup ul li {
+      margin: 10px 0;
+    }
+
+    .popup ul li a {
+      color: #333;
+      text-decoration: none;
+      display: block;
+      padding: 10px;
+      border-radius: 5px;
+      background-color: #f1f1f1;
+    }
+
+    .popup ul li a:hover {
+      background-color: #ddd;
+    }
+
+    .error-message {
+      position: fixed;
+      top: 20px;
+      right: 50%;
+      transform: translateX(50%);
+      background-color: #f44336;
+      color: white;
+      padding: 15px;
+      border-radius: 5px;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>ניהול תורים ב<%= user.room %></h1>
+    <p>משתמש מחובר: <strong><%= user.username %></strong> | <a href="/logout">התנתק</a></p>
+  </div>
+
+  <div class="content">
+    <h2>:מטופל נוכחי</h2>
+    <div id="current-patient">
+      <% if (currentPatient) { %>
+        <p>מספר מטופל: <%= currentPatient.patientNumber %></p>
+        <form action="/room/complete" method="POST" style="display:inline;">
+          <button type="submit">סיים טיפול</button>
+        </form>
+        <form action="/room/unprioritize/<%= currentPatient._id %>" method="POST" style="display:inline;">
+          <button type="submit">בטל תיעדוף</button>
+        </form>
+        <form action="/room/returnToQueue/<%= currentPatient._id %>" method="POST" style="display:inline;">
+          <button type="submit">החזר לתור</button>
+        </form>
+        <button onclick="openPopup('<%= currentPatient._id %>')">העבר חדר</button>
+        <button type="button" onclick="removeAndReAddPatient('<%= currentPatient._id %>')"> הכרז שוב</button>
+        <div id="popup-<%= currentPatient._id %>" class="popup">
+          <button class="close-btn" onclick="closePopup('<%= currentPatient._id %>')">X</button>
+          <h3>בחר חדר:</h3>
+          <ul>
+            <% rooms.forEach(room => { %>
+              <li>
+                <a href="#" onclick="movePatientToRoom('<%= currentPatient._id %>', '<%= room.name %>')">
+                  <%= room.name %>
+                </a>
+              </li>
+            <% }) %>
+          </ul>
+        </div>
+      <% } else { %>
+        <p>אין מטופל כעת</p>
+      <% } %>
+    </div>
+
+    <h2>רשימת המתנה:</h2>
+    <% if (waitingList.length > 0) { %>
+      <ul>
+        <% waitingList.forEach(patient => { %>
+          <li id="patient-<%= patient._id %>">
+            מספר מטופל: <%= patient.patientNumber %>
+            <button onclick="promotePatient('<%= patient._id %>', '<%= patient.patientNumber %>', '<%= user.room %>')">קבל מטופל</button>
+            <button onclick="openPopup('<%= patient._id %>')">העבר חדר</button>
+            <div id="popup-<%= patient._id %>" class="popup">
+              <button class="close-btn" onclick="closePopup('<%= patient._id %>')">X</button>
+              <h3>בחר חדר:</h3>
+              <ul>
+                <% rooms.forEach(room => { %>
+                  <li>
+                    <a href="#" onclick="movePatientToRoom('<%= patient._id %>', '<%= room.name %>')">
+                      <%= room.name %>
+                    </a>
+                  </li>
+                <% }) %>
+              </ul>
+            </div>
+            <% if (!patient.isPrioritized) { %>
+              <form action="/room/prioritize/<%= patient._id %>" method="POST" style="display:inline;">
+                <button type="submit">תעדף</button>
+              </form>
+            <% } else { %>
+              <form action="/room/unprioritize/<%= patient._id %>" method="POST" style="display:inline;">
+                <button type="submit">בטל תיעדוף</button>
+              </form>
+            <% } %>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p>אין מטופלים ברשימת ההמתנה</p>
+    <% } %>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    function sendRecallNotification(patientNumber, roomName) {
+      socket.emit('recallPatient', { patientNumber, roomName });
+      console.log('Recall notification sent for patient', patientNumber, 'in room', roomName);
+    }
+
+    function attachRecallButtonEvent(patientNumber, roomName) {
+      const recallButton = document.getElementById('recallButton');
+      if (recallButton) {
+        recallButton.addEventListener('click', function() {
+          sendRecallNotification(patientNumber, roomName);
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      <% if (currentPatient) { %>
+        const patientNumber = '<%= currentPatient.patientNumber %>';
+        const roomName = '<%= user.room %>';
+        attachRecallButtonEvent(patientNumber, roomName);
+      <% } %>
+    });
+
+    function promotePatient(patientId, patientNumber, roomName) {
+      fetch(`/room/promote/${patientId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (!data.success) {
+          showError(data.message);
+        } else {
+          updateUIAfterPromotion(patientId, patientNumber, roomName);
+          sendRecallNotification(patientNumber, roomName);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showError('תקלה בקבלת המטופל. נסה שוב.');
+      });
+    }
+
+    function removeAndReAddPatient(patientId) {
+      fetch(`/room/returnToQueue/${patientId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          setTimeout(() => {
+            promotePatient(patientId, '<%= currentPatient ? currentPatient.patientNumber : "" %>', '<%= user.room %>');
+          }, 1000);
+        } else {
+          console.error('Error returning patient to queue');
+          showError('שגיאה בהחזרת המטופל לתור.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showError('שגיאה בהחזרת המטופל לתור.');
+      });
+    }
+
+    function openPopup(patientId) {
+      const popup = document.getElementById(`popup-${patientId}`);
+      if (popup) {
+        popup.style.display = 'block';
+      } else {
+        console.error(`Popup with ID popup-${patientId} not found.`);
+      }
+    }
+
+    function closePopup(patientId) {
+      const popup = document.getElementById(`popup-${patientId}`);
+      if (popup) {
+        popup.style.display = 'none';
+      } else {
+        console.error(`Popup with ID popup-${patientId} not found.`);
+      }
+    }
+
+    function showError(message) {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-message';
+      errorDiv.innerText = message;
+      document.body.appendChild(errorDiv);
+      setTimeout(() => {
+        errorDiv.remove();
+      }, 5000);
+    }
+
+    function updateUIAfterPromotion(patientId, patientNumber, roomName) {
+      const patientElement = document.querySelector(`#patient-${patientId}`);
+      if (patientElement) {
+        patientElement.remove();
+      }
+      const currentPatientDiv = document.querySelector('#current-patient');
+      if (currentPatientDiv) {
+        currentPatientDiv.innerHTML = `
+          <p>מספר מטופל: ${patientNumber}</p>
+          <form action="/room/complete" method="POST" style="display:inline;">
+            <button type="submit">סיים טיפול</button>
+          </form>
+          <form action="/room/unprioritize/${patientId}" method="POST" style="display:inline;">
+            <button type="submit">בטל תיעדוף</button>
+          </form>
+          <form action="/room/returnToQueue/${patientId}" method="POST" style="display:inline;">
+            <button type="submit">החזר לתור</button>
+          </form>
+          <button onclick="openPopup('${patientId}')">העבר חדר</button>
+          <button type="button" id="recallButton" style="display: none;"></button>
+<button type="button" onclick="removeAndReAddPatient('${patientId}')" style="display: none;"></button>
+
+        `;
+        attachRecallButtonEvent(patientNumber, roomName);
+      }
+    }
+
+    function movePatientToRoom(patientId, newRoom) {
+      fetch(`/room/move/${patientId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ newRoom: newRoom })
+      })
+      .then(response => {
+        if (response.ok) {
+          closePopup(patientId);
+          window.location.reload();
+        } else {
+          showError('שגיאה בהעברת המטופל לחדר');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showError('שגיאה בהעברת המטופל לחדר');
+      });
+    }
+
+    setInterval(checkForUpdates, 5000);
+
+    function checkForUpdates() {
+      fetch('/room/checkUpdates')
+      .then(response => response.json())
+      .then(data => {
+        if (data.updated) {
+          window.location.reload();
+        }
+      })
+      .catch(error => {
+        console.error('Error checking for updates:', error);
+      });
+    }
+  </script>
+</body>
+</html>
